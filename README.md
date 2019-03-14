@@ -1,2 +1,2 @@
 # plugin.video.joovideo
-Kodi Video Plugin for JooVideo
+Kodi Video addon for JooVideo
