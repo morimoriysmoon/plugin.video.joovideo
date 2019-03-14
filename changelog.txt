@@ -1,0 +1,65 @@
+[B]Version 1.3.1[/B]
+- Changed way to get DM embedded URL (json)
+
+[B]Version 1.3.0[/B]
+- Changed way to get DM embedded URL
+
+[B]Version 1.2.5[/B]
+- Changed way to get DM embedded URL
+
+[B]Version 1.2.4[/B]
+- Changed way to get DM embedded URL
+
+[B]Version 1.2.3[/B]
+- Changed index number to get MP4 stream URL (0 -> 1)
+    "metadata":{
+        "qualities":{
+            "480":[
+                {"type":"application\/x-mpegURL", "url":""},
+                {"type":"video\/mp4", "url":""}
+            ],
+        }
+    }
+
+[B]Version 1.2.2[/B]
+- Added a variable representing html parser string
+
+[B]Version 1.2.1[/B]
+- Handled "var config = {};"
+
+[B]Version 1.2.0[/B]
+- Handled URL Redirection
+
+[B]Version 1.1.1[/B]
+- Handled more exceptions(requests.ConnectionError)
+
+[B]Version 1.1.0[/B]
+- Handled more exceptions(IndexError)
+
+[B]Version 1.0.2[/B]
+- Handled more exceptions
+
+[B]Version 1.0.1[/B]
+- Base class added
+
+[B]Version 1.0.0[/B]
+- supports contents gzipped
+
+[B]Version 0.8.0[/B]
+- change landing page (http://www.korvideo.net)
+- enhances HTTPS POST method
+
+[B]Version 0.7.0[/B]
+- handle HTTPS POST
+
+[B]Version 0.6.0[/B]
+- handle HTTPS
+
+[B]Version 0.4.0[/B]
+- Added Category
+
+[B]Version 0.3.0[/B]
+- Modified regular expression pattern for searching stream url
+
+[B]Version 0.1.0[/B]
+- Initial version
