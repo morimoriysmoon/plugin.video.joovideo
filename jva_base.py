@@ -23,6 +23,7 @@ import re
 import urlparse
 from bs4 import BeautifulSoup
 import requests
+#import xbmc
 
 
 reload(sys)
@@ -196,6 +197,9 @@ class JVABase:
         urls = list()
 
         res = self.getResponse_raw(joovideo_internal_url)
+
+        #xbmc.log('JOOVIDEO::getEmbedVideoUrls - res is %s' % res, xbmc.LOGDEBUG)
+
         soup = BeautifulSoup(res.text, self.HTML_PARSER)
 
         main_iframe = soup.find('iframe', attrs={'id': 'frameFlashId'})
@@ -222,17 +226,26 @@ class JVABase:
                     break
 
             if is_supported:
-                # ex> javascript:__doPostBack('HostLink','414234|25|델리모션[1/2]||0|0')
+                # ex> javascript:__doPostBack('HostLink','414234|25|델리모션[1/2]|용문동-이필모, 온주완 |0|0')
                 m = re.search(self.EVT_TARGET_PATN2, item['href'])
 
                 if m is not None:
                     form_data = self.getPOSTFormDataFromBS(soup)
+
                     args = m.group().replace("'", "").split(",")
 
                     form_data['__EVENTTARGET'] = args[0]
-                    form_data['__EVENTARGUMENT'] = args[1]
+
+                    # 중간의 "," 처리
+                    if len(args) > 1:
+                        for idx in range(1, len(args)):
+                            form_data['__EVENTARGUMENT'] += args[idx]
+
+                    #xbmc.log('JOOVIDEO::getEmbedVideoUrls - form_data is %s' % form_data, xbmc.LOGDEBUG)
 
                     jv_html = self.getResponse_ByPOST(res.url, form_data)
+
+                    #xbmc.log('JOOVIDEO::getEmbedVideoUrls - jv_html is %s' % jv_html, xbmc.LOGDEBUG)
 
                     item_soup = BeautifulSoup(jv_html, self.HTML_PARSER)
 

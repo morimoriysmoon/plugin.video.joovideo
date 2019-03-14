@@ -142,6 +142,8 @@ class JooVideoAddon(JVABase):
     def showPartialClips(self, jv_media_no):
         dm_embed_urls = self.getEmbedVideoUrls(self.getJooVideoInternalUrl('Num=' + jv_media_no))
 
+        #xbmc.log('JOOVIDEO::showPartialClips - dm_embed_urls is %s' % dm_embed_urls, xbmc.LOGDEBUG)
+
         for dm_embed_url in dm_embed_urls:
             # Create ListItems
             item_title = dm_embed_url['title']
