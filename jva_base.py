@@ -239,7 +239,10 @@ class JVABase:
                     # 중간의 "," 처리
                     if len(args) > 1:
                         for idx in range(1, len(args)):
-                            form_data['__EVENTARGUMENT'] += args[idx]
+                            if idx != 1:
+                                form_data['__EVENTARGUMENT'] += (',' + args[idx])
+                            else:
+                                form_data['__EVENTARGUMENT'] += args[idx]
 
                     #xbmc.log('JOOVIDEO::getEmbedVideoUrls - form_data is %s' % form_data, xbmc.LOGDEBUG)
 
