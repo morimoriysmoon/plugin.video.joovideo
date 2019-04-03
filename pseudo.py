@@ -45,12 +45,7 @@ class JooVideoAddonPseudo(JVABase):
         data = self.getResponse(self.JOOVIDEO_LANDING_URL)
         soup = BeautifulSoup(data, self.HTML_PARSER)
 
-        categories = list()
-
-        for tblname in self.category_tblnames:
-            categ_table = soup.find('table', attrs={'id': tblname})
-            if categ_table:
-                categories.append(categ_table)
+        categories = self.getCategoryTables(soup)
 
         for category in categories:
             # 주의 : DOM은 규격상 table내에 강제로 tbody를 포함시킨다. 따라서 서버가 보낸 실제 스트림을 확인해야 한다.
@@ -61,12 +56,7 @@ class JooVideoAddonPseudo(JVABase):
         data = self.getResponse(self.JOOVIDEO_LANDING_URL)
         soup = BeautifulSoup(data, self.HTML_PARSER)
 
-        categories = list()
-
-        for tblname in self.category_tblnames:
-            categ_table = soup.find('table', attrs={'id': tblname})
-            if categ_table:
-                categories.append(categ_table)
+        categories = self.getCategoryTables(soup)
 
         error_count = 0
         for category in categories:
