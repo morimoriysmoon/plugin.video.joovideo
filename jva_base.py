@@ -77,8 +77,8 @@ class JVABase:
         'news_sports': unicode('뉴스,스포츠')
     }
 
-    # JOOVIDEO_LANDING_URL = "http://joovideo.net"
-    JOOVIDEO_LANDING_URL = "http://www.korvideo.com"
+    JOOVIDEO_LANDING_URL = "http://joovideo.net"
+    # JOOVIDEO_LANDING_URL = "http://krtune.net"
 
     ENTRY_FILENAME = "ViewLink"
 
@@ -383,6 +383,23 @@ class JVABase:
 
     def getDMEmbedUrl_v2_From(self, jv_link):
         return jv_link
+
+    def getCategoryTables(self, soup):
+
+        categories = list()
+
+        for tblname in self.category_tblnames:
+            categ_table = soup.find('table', attrs={'id': tblname})
+            if categ_table:
+                categories.append(categ_table)
+
+        # WORKAROUND
+        if len(categories) < 5:
+            categories = soup.find_all('table', attrs={'id': self.category_tblnames[0]})
+        # WORKAROUND
+
+        return categories
+
 
 if __name__ == '__main__':
     pass
