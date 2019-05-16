@@ -138,7 +138,7 @@ class JooVideoAddon(JVABase):
             item_title = dm_embed_url['title']
             file_info = dm_embed_url['file_info']['result'][dm_embed_url['dm_video_id']] if dm_embed_url['file_info'] else ""
             file_size = self.toMegabytes(file_info['size']) if dm_embed_url['file_info'] else ""
-            video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'])
+            video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'] if dm_embed_url['file_info'] else None)
 
             title_template = "{0}, {1}MBytes [{2}]"
             title = title_template.format(item_title, file_size, video_resolution)

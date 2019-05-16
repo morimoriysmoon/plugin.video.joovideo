@@ -102,7 +102,8 @@ class JooVideoAddonPseudo(JVABase):
 
                         file_info = item['file_info']['result'][item['dm_video_id']] if item['file_info'] else ""
                         file_size = self.toMegabytes(file_info['size']) if item['file_info'] else ""
-                        video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'])
+                        video_resolution = self.getVideoResolutionFromVStreamFilename(
+                            file_info['name'] if item['file_info'] else None)
 
                         _embed_url_ = u'{0} : {1} : {2}, {3}MBytes [{4}]'.format(
                             item['title'],
@@ -303,5 +304,33 @@ if __name__ == '__main__':
     jvaPseudo.showCategoryListItems('시사')
     jvaPseudo.showCategoryListItems('뉴스,스포츠')
     jvaPseudo.printFaultyItems()
+
+    """
+    jvaPseudo.setContentHostname("https://joovideo.net")
+    dm_emb_urls = jvaPseudo.getEmbedVideoUrls(jvaPseudo.getJooVideoInternalUrl('Num=2455578982904954922'))
+
+    for item in dm_emb_urls:
+        try:
+            print(item)
+            dm_stream_url = jvaPseudo.getStreamUrl(item)
+            file_info = item['file_info']['result'][item['dm_video_id']] if item['file_info'] else ""
+            file_size = jvaPseudo.toMegabytes(file_info['size']) if item['file_info'] else ""
+            video_resolution = jvaPseudo.getVideoResolutionFromVStreamFilename(
+                file_info['name'] if item['file_info'] else None)
+
+            _embed_url_ = u'{0} : {1} : {2}, {3}MBytes [{4}]'.format(
+                item['title'],
+                item['dm_emb_url'],
+                item['dm_video_id'],
+                file_size,
+                video_resolution
+            )
+            print u'EmbedUrl : {0}'.format(_embed_url_)
+            print u'streamUrl : {0}'.format(dm_stream_url)
+        except UnicodeEncodeError as e:
+            print 'UnicodeEncodeError: {0}'.format(e.message)
+            continue
+        
+    """
 
     del jvaPseudo
