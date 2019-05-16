@@ -23,15 +23,12 @@ import re
 import urlparse
 from bs4 import BeautifulSoup
 import requests
-#import xbmc
-
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
 
 class JVABase:
-
     # need a proper header information to make web-server recognize
     # user_agent = 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:47.0) Gecko/20100101 Firefox/47.0'  # Firefox
     user_agent = 'Android'
@@ -103,7 +100,10 @@ class JVABase:
     category_tblnames = ["tblDrama", "tblEnt", "tblDoc", "tblEven", "tblNews"]
 
     # stream_providers = [unicode('델리모션'), unicode('Oload')]  # converts 'str' to 'unicode'
-    stream_providers = [unicode('델리모션')]  # converts 'str' to 'unicode'
+    # stream_providers = [unicode('델리모션')]  # converts 'str' to 'unicode'
+    stream_providers = [unicode('VStream')]  # converts 'str' to 'unicode'
+
+    VSTREAM_EMBED_URL_TEMPLATE = 'https://verystream.com/e/{0}'
 
     def __init__(self):
         self.HTML_PARSER = "html.parser"  # default: "html.parser", "lxml", "html5lib"
@@ -173,11 +173,26 @@ class JVABase:
             return oload_video_src_url
         return ''
 
+    def getVStreamEmbedVideoIDFromBS(self, bs):
+        row_item = bs.find('iframe', attrs={'id': re.compile('frameFlashId', re.I)})
+        if row_item is not None:
+            vs_video_id = row_item['src'].split("/")[4]
+            return vs_video_id
+        return None
+
+    def getVStreamEmbedVideoUrlFromBS(self, bs):
+        vs_video_id = self.getVStreamEmbedVideoIDFromBS(bs)
+        if vs_video_id is not None:
+            return self.VSTREAM_EMBED_URL_TEMPLATE.format(vs_video_id)
+        return ''
+
     def getEmbedVideoUrlFromBS(self, bs, provider_name):
         if provider_name == unicode('델리모션'):
             return self.getDMEmbedVideoUrlFromBS(bs)
         elif provider_name == unicode('Oload'):
             return self.getOloadEmbedVideoUrlFromBS(bs)
+        elif provider_name == unicode('VStream'):
+            return self.getVStreamEmbedVideoUrlFromBS(bs)
         else:
             return 'NOT IMPLEMENTED'
 
@@ -198,7 +213,7 @@ class JVABase:
 
         res = self.getResponse_raw(joovideo_internal_url)
 
-        #xbmc.log('JOOVIDEO::getEmbedVideoUrls - res is %s' % res, xbmc.LOGDEBUG)
+        # xbmc.log('JOOVIDEO::getEmbedVideoUrls - res is %s' % res, xbmc.LOGDEBUG)
 
         soup = BeautifulSoup(res.text, self.HTML_PARSER)
 
@@ -244,18 +259,23 @@ class JVABase:
                             else:
                                 form_data['__EVENTARGUMENT'] += args[idx]
 
-                    #xbmc.log('JOOVIDEO::getEmbedVideoUrls - form_data is %s' % form_data, xbmc.LOGDEBUG)
+                    # xbmc.log('JOOVIDEO::getEmbedVideoUrls - form_data is %s' % form_data, xbmc.LOGDEBUG)
 
                     jv_html = self.getResponse_ByPOST(res.url, form_data)
 
-                    #xbmc.log('JOOVIDEO::getEmbedVideoUrls - jv_html is %s' % jv_html, xbmc.LOGDEBUG)
+                    # xbmc.log('JOOVIDEO::getEmbedVideoUrls - jv_html is %s' % jv_html, xbmc.LOGDEBUG)
 
                     item_soup = BeautifulSoup(jv_html, self.HTML_PARSER)
 
-                    dm_video_id = self.getDMEmbedVideoIDFromBS(item_soup)
+                    dm_video_id = self.getVStreamEmbedVideoIDFromBS(item_soup)
+                    vstream_fileinfo = self.getVStreamFileinfo(dm_video_id)
+
+                    # TODO : refactoring
                     dm_embed_url = self.getEmbedVideoUrlFromBS(item_soup, provider)
+
                     title = self.getEpisodeNameFromBS(item_soup)
-                    urls.append({'title': title, 'dm_emb_url': dm_embed_url, 'stream_provider': provider, 'dm_video_id': dm_video_id})
+                    urls.append({'title': title, 'dm_emb_url': dm_embed_url, 'stream_provider': provider,
+                                 'dm_video_id': dm_video_id, 'file_info': vstream_fileinfo})
                 else:
                     print 'm is None'
 
@@ -317,7 +337,8 @@ class JVABase:
         post_data['__EVENTVALIDATION'] = __eventvalidation
 
         # ctl00$ContentPlaceHolder1${0}1$txtTitle.format(self.ENTRY_FILENAME)
-        __txtTitle_tag = bs.find('input', attrs={'type': 'hidden', 'id': re.compile(self.JOOVIDEO_TXT_TITLE_PATN, re.I)})
+        __txtTitle_tag = bs.find('input',
+                                 attrs={'type': 'hidden', 'id': re.compile(self.JOOVIDEO_TXT_TITLE_PATN, re.I)})
         __txtTitle = __txtTitle_tag['value']
         post_data['ctl00$ContentPlaceHolder1${0}1$txtTitle'.format(self.ENTRY_FILENAME)] = __txtTitle
 
@@ -399,6 +420,21 @@ class JVABase:
         # WORKAROUND
 
         return categories
+
+    def getVStreamFileinfo(self, vid):
+        url_template = 'https://api.verystream.com/file/info?file={0}'
+        url = url_template.format(vid)
+        r = requests.get(url)
+        return r.json()
+
+    def toMegabytes(self, bytes):
+        return int(bytes) / (1024 * 1024)
+
+    def getVideoResolutionFromVStreamFilename(self, vs_stream_url):
+        re_pat = '[\d]{3}p\.mp4'
+        m = re.search(re_pat, vs_stream_url)
+        resolution = m.group()
+        return resolution.split('.')[0]
 
 
 if __name__ == '__main__':

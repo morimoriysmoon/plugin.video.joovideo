@@ -1,3 +1,6 @@
+[B]Version 1.4.0[/B]
+- Switch to verystream
+
 [B]Version 1.3.3[/B]
 - Handle exceptional cases Category table id is not unique
 

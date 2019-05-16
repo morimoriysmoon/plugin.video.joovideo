@@ -20,7 +20,6 @@
 
 from jva_base import *
 import sys
-import json
 import os
 import urllib2
 import urllib
@@ -132,16 +131,23 @@ class JooVideoAddon(JVABase):
     def showPartialClips(self, jv_media_no):
         dm_embed_urls = self.getEmbedVideoUrls(self.getJooVideoInternalUrl('Num=' + jv_media_no))
 
-        #xbmc.log('JOOVIDEO::showPartialClips - dm_embed_urls is %s' % dm_embed_urls, xbmc.LOGDEBUG)
+        # xbmc.log('JOOVIDEO::showPartialClips - dm_embed_urls is %s' % dm_embed_urls, xbmc.LOGDEBUG)
 
         for dm_embed_url in dm_embed_urls:
             # Create ListItems
             item_title = dm_embed_url['title']
-            item = xbmcgui.ListItem(item_title, iconImage=ICON)
+            file_info = dm_embed_url['file_info']['result'][dm_embed_url['dm_video_id']]
+            file_size = self.toMegabytes(file_info['size'])
+            video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'])
+
+            title_template = "{0}, {1}MBytes [{2}]"
+            title = title_template.format(item_title, file_size, video_resolution)
+
+            item = xbmcgui.ListItem(title, iconImage=ICON)
             item.setInfo(
                 type='video',
                 infoLabels={
-                    'title': item_title,
+                    'title': title,
                     'studio': ADDON.getAddonInfo('name')
                 }
             )
@@ -154,45 +160,26 @@ class JooVideoAddon(JVABase):
 
         xbmcplugin.endOfDirectory(HANDLE)
 
-    def getStreamUrl(self, vid):
+    def getVStreamStreamUrl(self, vid):
+        """
+
+        :param vid: verystream video id
+        :return:
+        """
         try:
+            vstream_prefix = unicode("https://verystream.com/gettoken/")
+            vstream_postfix = unicode("?mime=true")
+            content = self.getResponse(self.VSTREAM_EMBED_URL_TEMPLATE.format(vid))
+            # print("""{0}""".format(content))
+            item_soup = BeautifulSoup(content, self.HTML_PARSER)
+            row_item = item_soup.find('p', attrs={'id': re.compile('videolink', re.I)})
+            if row_item is not None:
+                vstream_video_src_url = row_item.string
+                stream_url = vstream_prefix + vstream_video_src_url + vstream_postfix
+                r = requests.get(stream_url, stream=True)
+                return r.url
 
-            headers = {'User-Agent': 'Android'}
-            cookie = {'lang': 'en', 'ff': 'off'}
-            r = requests.get(
-                "https://www.dailymotion.com/player/metadata/video/" + vid,
-                headers=headers,
-                cookies=cookie
-            )
-
-            context_json = r.json()
-
-            if context_json.get('error') is not None:
-                err_title = context_json['error']['title']
-                err_message = context_json['error']['message']
-                xbmc.executebuiltin('XBMC.Notification(Info:, [{0}] {1},10000)'.format(err_title, err_message))
-            else:
-                try:
-                    cc = context_json['qualities']  # ['380'][1]['url']
-                    # print cc
-                    if '480' in cc.keys():
-                        return cc['480'][1]['url']
-                    elif '720' in cc.keys():
-                        return cc['720'][1]['url']
-                    elif '380' in cc.keys():
-                        return cc['380'][1]['url']
-                    elif '1080' in cc.keys():
-                        return cc['1080'][1]['url']
-                    elif '240' in cc.keys():
-                        return cc['240'][1]['url']
-                    elif '144' in cc.keys():
-                        return cc['144'][1]['url']
-                    # elif 'auto' in cc.keys():
-                    #    return cc['auto'][1]['url']
-                    else:
-                        xbmc.executebuiltin('XBMC.Notification(Info:, No playable resolution found!,5000)')
-                except Exception as e:
-                    buggalo.onExceptionRaised()
+            return ''
 
         except urllib2.HTTPError as e:
             xbmc.executebuiltin('XBMC.Notification(Info:, [Exception] {0}!,10000)'.format(e.message))
@@ -204,8 +191,9 @@ class JooVideoAddon(JVABase):
             xbmc.executebuiltin('XBMC.Notification(Info:, [Exception] {0}!,10000)'.format(e.message))
         except requests.ConnectionError as e:
             xbmc.executebuiltin('XBMC.Notification(Info:, [Exception] {0}!,10000)'.format(e.message))
-        except TypeError as e:
-            xbmc.executebuiltin('XBMC.Notification(Info:, [Exception] {0}!,10000)'.format(e.message))
+
+    def getStreamUrl(self, vid):
+        return self.getVStreamStreamUrl(vid)
 
     def playVideo(self, vid):
         dm_stream_url = self.getStreamUrl(vid)
@@ -254,5 +242,5 @@ if __name__ == '__main__':
         else:
             jva.showCategories()  # 1
     except Exception as e:
-        xbmc.log('JOOVIDEO - Exception is %s'%e.message, xbmc.LOGDEBUG)
+        xbmc.log('JOOVIDEO - Exception is %s' % e.message, xbmc.LOGDEBUG)
         buggalo.onExceptionRaised()

@@ -20,7 +20,6 @@
 
 from jva_base import *
 import sys
-import json
 import urllib2
 import requests
 
@@ -95,13 +94,24 @@ class JooVideoAddonPseudo(JVABase):
 
                 if len(dm_emb_urls) is 2:
                     if dm_emb_urls[0]['title'] is dm_emb_urls[1]['title']:
-                         error_count += 1
+                        error_count += 1
 
                 for item in dm_emb_urls:
                     try:
-                        _embed_url_ = u'{0} : {1} : {2}'.format(item['title'], item['dm_emb_url'], item['dm_video_id'])
-                        print u'EmbedUrl : {0}'.format(_embed_url_)
                         dm_stream_url = self.getStreamUrl(item)
+
+                        file_info = item['file_info']['result'][item['dm_video_id']]
+                        file_size = self.toMegabytes(file_info['size'])
+                        video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'])
+
+                        _embed_url_ = u'{0} : {1} : {2}, {3}MBytes [{4}]'.format(
+                            item['title'],
+                            item['dm_emb_url'],
+                            item['dm_video_id'],
+                            file_size,
+                            video_resolution
+                        )
+                        print u'EmbedUrl : {0}'.format(_embed_url_)
                         print u'streamUrl : {0}'.format(dm_stream_url)
                     except UnicodeEncodeError as e:
                         print 'UnicodeEncodeError: {0}'.format(e.message)
@@ -208,6 +218,38 @@ class JooVideoAddonPseudo(JVABase):
         except requests.ConnectionError as e:
             return "[Exception] {0}".format(e.message)
 
+    def getVStreamStreamUrl(self, vstream_embed_url):
+        """
+
+        :param vstream_embed_url: url
+        :return:
+        """
+        try:
+            vstream_prefix = unicode("https://verystream.com/gettoken/")
+            vstream_postfix = unicode("?mime=true")
+            content = self.getResponse(vstream_embed_url)
+            # print("""{0}""".format(content))
+            item_soup = BeautifulSoup(content, self.HTML_PARSER)
+            row_item = item_soup.find('p', attrs={'id': re.compile('videolink', re.I)})
+            if row_item is not None:
+                vstream_video_src_url = row_item.string
+                stream_url = vstream_prefix + vstream_video_src_url + vstream_postfix
+                r = requests.get(stream_url, stream=True)
+                return r.url
+
+            return ''
+
+        except urllib2.HTTPError as e:
+            return "[Exception] {0}".format(e.message)
+        except urllib2.URLError as e:
+            return "[Exception] {0}".format(e.message)
+        except ValueError as e:
+            return "[Exception] {0}".format(e.message)
+        except IndexError as e:
+            return "[Exception] {0}".format(e.message)
+        except requests.ConnectionError as e:
+            return "[Exception] {0}".format(e.message)
+
     def getStreamUrl(self, url_info):
         """
         
@@ -223,6 +265,8 @@ class JooVideoAddonPseudo(JVABase):
             return self.getDMStreamUrl(url_info)
         elif url_info['stream_provider'] == unicode('Oload'):
             return self.getOloadStreamUrl(url_info['dm_emb_url'])
+        elif url_info['stream_provider'] == unicode('VStream'):
+            return self.getVStreamStreamUrl(url_info['dm_emb_url'])
         else:
             return 'NOT IMPLEMENTED'
 
@@ -250,12 +294,6 @@ class JooVideoAddonPseudo(JVABase):
 
 
 if __name__ == '__main__':
-    """
-    err_url = 'http://www.dailymotion.com/embed/video/k6dpiFMFhusAWsi1HMD?syndication=110300&logo=0&info=0&autoPlay=0'
-
-    DailyMotion 서버가 HTTP 404를 리턴한다.
-    보내준 response내의 javascript에서 무언가를 실행하여 페이지가 아름답게 보이도록 한다.
-    """
 
     jvaPseudo = JooVideoAddonPseudo()
     jvaPseudo.showCategories()
