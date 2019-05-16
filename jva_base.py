@@ -431,10 +431,15 @@ class JVABase:
         return int(bytes) / (1024 * 1024)
 
     def getVideoResolutionFromVStreamFilename(self, vs_stream_url):
-        re_pat = '[\d]{3}p\.mp4'
-        m = re.search(re_pat, vs_stream_url)
-        resolution = m.group()
-        return resolution.split('.')[0]
+        if vs_stream_url is not None:
+            re_pat = '[\d]{3}p\.mp4'
+            m = re.search(re_pat, vs_stream_url)
+            resolution = m.group()
+            if resolution is not None:
+                return resolution.split('.')[0]
+            else:
+                return ""
+        return ""
 
 
 if __name__ == '__main__':
