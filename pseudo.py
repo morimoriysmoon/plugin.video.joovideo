@@ -100,8 +100,8 @@ class JooVideoAddonPseudo(JVABase):
                     try:
                         dm_stream_url = self.getStreamUrl(item)
 
-                        file_info = item['file_info']['result'][item['dm_video_id']]
-                        file_size = self.toMegabytes(file_info['size'])
+                        file_info = item['file_info']['result'][item['dm_video_id']] if item['file_info'] else ""
+                        file_size = self.toMegabytes(file_info['size']) if item['file_info'] else ""
                         video_resolution = self.getVideoResolutionFromVStreamFilename(file_info['name'])
 
                         _embed_url_ = u'{0} : {1} : {2}, {3}MBytes [{4}]'.format(

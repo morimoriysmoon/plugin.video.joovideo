@@ -422,10 +422,14 @@ class JVABase:
         return categories
 
     def getVStreamFileinfo(self, vid):
-        url_template = 'https://api.verystream.com/file/info?file={0}'
-        url = url_template.format(vid)
-        r = requests.get(url)
-        return r.json()
+        try:
+            url_template = 'https://api.verystream.com/file/info?file={0}'
+            url = url_template.format(vid)
+            r = requests.get(url)
+            if r.json()['status'] == 200:
+                return r.json()
+        except requests.ConnectionError as e:
+            return None
 
     def toMegabytes(self, bytes):
         return int(bytes) / (1024 * 1024)
