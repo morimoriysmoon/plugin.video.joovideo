@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.joovideo" 
-version="1.4.0" name="JooVideo.net" provider-name="Yongsik Moon">
+version="1.4.1" name="JooVideo.net" provider-name="Yongsik Moon">
 	<requires>
 		<import addon="xbmc.python" 
 version="2.23.0"/>

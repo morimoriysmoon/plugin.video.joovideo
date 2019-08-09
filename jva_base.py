@@ -74,8 +74,9 @@ class JVABase:
         'news_sports': unicode('뉴스,스포츠')
     }
 
-    JOOVIDEO_LANDING_URL = "http://joovideo.net"
+    # JOOVIDEO_LANDING_URL = "http://joovideo.net"
     # JOOVIDEO_LANDING_URL = "http://krtune.net"
+    JOOVIDEO_LANDING_URL = "http://krvideo.net"
 
     ENTRY_FILENAME = "ViewLink"
 
