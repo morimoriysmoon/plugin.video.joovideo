@@ -20,6 +20,8 @@
    - Repository로 verystream 만 지원합니다.
 
    - 사정에 따라 재생이 불가능할 수도 있습니다.
+   
+   - Landing page의 url이 자주 바뀌기 때문에 종종 반영이 늦어질 수 있습니다.
 
 
 # Kodi 16.1 for Android와의 문제점
